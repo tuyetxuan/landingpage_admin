@@ -1,0 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Anaheim:wght@400..800&family=Concert+One&family=Exo+2:ital,wght@0,100..900;1,100..900&family=Inter+Tight:ital,wght@0,100..900;1,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Lobster&family=Pacifico&family=Roboto:ital,wght@0,100..900;1,100..900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    html {
+        font-family: 'DM Sans', sans-serif !important;
+        font-feature-settings: 'kern' !important;
+        -webkit-font-smoothing: antialiased;
+        letter-spacing: -0.5px;
+    }
+
+}
+
+.custom-toast-container .Toastify__toast {
+    width: max-content !important;
+    min-width: 370px !important;
+}

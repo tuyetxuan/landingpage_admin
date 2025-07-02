@@ -1,0 +1,16 @@
+{
+  "plugins": [
+    "prettier-plugin-svelte",
+    "prettier-plugin-organize-imports",
+    "prettier-plugin-tailwindcss"
+  ],
+  "pluginSearchDirs": false,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "arrowParens": "avoid",
+  "bracketSameLine": true,
+  "bracketSpacing": true,
+  "jsxSingleQuote": true,
+  "semi": true,
+  "tailwindConfig": "./tailwind.config.cjs"
+}
