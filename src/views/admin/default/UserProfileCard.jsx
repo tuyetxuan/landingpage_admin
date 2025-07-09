@@ -1,6 +1,6 @@
 import React from 'react';
 import { Avatar, Col, Row, Tag, Typography } from 'antd';
-import { EnvironmentOutlined, MailOutlined, PhoneOutlined, UserAddOutlined, UserOutlined } from '@ant-design/icons';
+import { EnvironmentOutlined, MailOutlined, PhoneOutlined, UserAddOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 
@@ -21,11 +21,22 @@ const UserProfileCard = ({ user }) => {
     <div className="max-w-full mx-auto h-full p-4">
       {/* Avatar */}
       <div className="flex justify-center mb-4">
-        <Avatar
-          size={150}
-          src={profile_image || undefined}
-          icon={!profile_image && <UserOutlined />}
-        />
+        {
+          profile_image ? (<Avatar
+            size={150}
+            src={profile_image}
+            className="ring-4 ring-white"
+          />) : (
+            <Avatar
+              style={{
+                backgroundColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
+                verticalAlign: 'middle',
+              }}
+              size={100}
+            >
+              {last_name?.split(' ').pop()?.charAt(0)?.toUpperCase()}
+            </Avatar>)
+        }
       </div>
       
       <div className="text-center mb-5">

@@ -1,17 +1,17 @@
-import React, {useState} from 'react';
-import {Button, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, Typography} from 'antd';
+import React, {useEffect, useState} from 'react';
+import {Button, Form, Input, Modal, Popconfirm, Select, Space, Spin, Table, Tag, Typography} from 'antd';
 import {CheckCircleOutlined, DeleteOutlined, EditOutlined, EnvironmentOutlined, MailOutlined, MessageOutlined, PhoneOutlined, ReloadOutlined, SearchOutlined, UserOutlined,} from '@ant-design/icons';
 import {createStyles} from 'antd-style';
 import {useGetStatusContactsQuery} from '../../../features/statusContact/statusContact';
 import ToastNotification from '../../../components/ToastNotification/ToastNotification';
 import {Bounce, ToastContainer} from 'react-toastify';
-import {useDeleteContactMutation, useGetContactQuery, useUpdateContactMutation} from "../../../features/contact/contact";
+import {useDeleteContactMutation, useGetContactQuery, useUpdateContactAuthorMutation, useUpdateContactMutation, useUpdateStatusMutation} from "../../../features/contact/contact";
 import {Editor} from 'react-draft-wysiwyg';
+import htmlToDraft from 'html-to-draftjs';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
-import {convertToRaw, EditorState} from "draft-js";
+import {ContentState, convertToRaw, EditorState} from "draft-js";
 import draftToHtml from "draftjs-to-html";
 import {useGetUserQuery} from "../../../features/user/user";
-
 
 const {Option} = Select;
 const {Title, Text, Paragraph} = Typography;
@@ -97,19 +97,27 @@ const Contact = () => {
 		data: contacts = [],
 		isLoading: isLoadingContacts,
 		refetch: refetchContacts,
-	} = useGetContactQuery();
+	} = useGetContactQuery(undefined, {
+		pollingInterval: 2000,
+	});
 	
 	const {data: statuses = [], isLoading: isLoadingStatuses} = useGetStatusContactsQuery();
-	const [updateContactStatus, {isLoading: isLoadingUpdateContactStatus}] = useUpdateContactMutation();
-	const [deleteContact, {isLoading: isLoadingDeleteContact}] = useDeleteContactMutation();
 	const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
 	const [currentRecord, setCurrentRecord] = useState(null);
 	const [searchText, setSearchText] = useState('');
 	const [filterStatus, setFilterStatus] = useState('all');
-	
+	const [status, setStatus] = useState(null);
 	const [editorState, setEditorState] = useState(EditorState.createEmpty());
 	const [showFullMessage, setShowFullMessage] = useState(false);
 	const [showFullAddress, setShowFullAddress] = useState(false);
+	
+	useEffect(() => {
+		if (currentRecord && currentRecord?.notes) {
+			const contentBlocks = htmlToDraft(currentRecord.notes || '');
+			const contentState = ContentState.createFromBlockArray(contentBlocks.contentBlocks, contentBlocks.entityMap);
+			setEditorState(EditorState.createWithContent(contentState));
+		}
+	}, [currentRecord]);
 	
 	const onEditorStateChange = (newEditorState) => {
 		setEditorState(newEditorState);
@@ -122,14 +130,15 @@ const Contact = () => {
 		return text.length > length ? text.slice(0, length) + "..." : text;
 	};
 	
+	const [deleteContact, {isLoading: isLoadingDeleteContact}] = useDeleteContactMutation();
 	const handleDelete = async (id) => {
 		try {
-			await deleteContact(id).unwrap();
+			const response = await deleteContact(id).unwrap();
 			refetchContacts();
 			ToastNotification({
 				type: 'success',
 				title: 'Xóa Contact thành công!',
-				message: 'Contact đã được xóa thành công.',
+				message: `Bạn đã xóa contact của khách hàng ${response?.contact?.name} thành công.`,
 			});
 		} catch (error) {
 			ToastNotification({
@@ -140,10 +149,63 @@ const Contact = () => {
 		}
 	};
 	
-	const handleStatusChange = async (id, statusId, fromModal = false) => {
+	const [submitUpdateAuthor, {isLoading: isLoadingUpdateAuthor}] = useUpdateContactAuthorMutation();
+	const handleUpdateAuthor = async (id) => {
 		try {
-			const values = {contactId: id, status_id: statusId};
-			const response = await updateContactStatus(values).unwrap();
+			const payload = {id: id};
+			const response = await submitUpdateAuthor(payload).unwrap();
+			refetchContacts();
+			ToastNotification({
+				type: 'success',
+				title: 'Tiếp nhận xử lý Contact thành công!',
+				message: `Bạn đã tiếp nhận xử lý ${response?.contact?.name} thành công.`,
+			});
+			setIsInfoModalVisible(false);
+			form.resetFields();
+			setEditorState(EditorState.createEmpty());
+			setCurrentRecord(null);
+		} catch (error) {
+			ToastNotification({
+				type: 'error',
+				title: 'Thông báo lỗi - Error!',
+				message: error.message || 'Đã xảy ra lỗi khi cập nhật contact.',
+			});
+		}
+	}
+	
+	const [submitUpdateContact, {isLoading: isLoadingUpdateContact}] = useUpdateContactMutation();
+	const handleSubmit = async () => {
+		try {
+			const payload = {
+				id: currentRecord.id,
+				status_id: currentRecord.status_id,
+				notes: draftToHtml(convertToRaw(editorState.getCurrentContent())),
+			};
+			const response = await submitUpdateContact(payload).unwrap();
+			refetchContacts();
+			ToastNotification({
+				type: 'success',
+				title: 'Cập nhật Contact thành công!',
+				message: `Cập nhật thông tin cho ${response?.contact?.name} thành công.`,
+			});
+			setIsInfoModalVisible(false);
+			form.resetFields();
+			setEditorState(EditorState.createEmpty());
+			setCurrentRecord(null);
+		} catch (error) {
+			ToastNotification({
+				type: 'error',
+				title: 'Thông báo lỗi - Error!',
+				message: error.message || 'Đã xảy ra lỗi khi cập nhật contact.',
+			});
+		}
+	};
+	
+	const [submitUpdateStatus, {isLoading: isLoadingUpdateStatus}] = useUpdateStatusMutation();
+	const handleStatusChange = async (id, statusId) => {
+		try {
+			const values = {id: id, status_id: statusId};
+			const response = await submitUpdateStatus(values).unwrap();
 			if (response) {
 				refetchContacts();
 				ToastNotification({
@@ -151,9 +213,6 @@ const Contact = () => {
 					title: 'Cập nhật trạng thái thành công!',
 					message: `Cập nhật trạng thái cho ${response?.contact?.name} thành công.`,
 				});
-				if (fromModal) {
-					setCurrentRecord({...currentRecord, status_id: statusId});
-				}
 			}
 		} catch (error) {
 			ToastNotification({
@@ -242,7 +301,7 @@ const Contact = () => {
 			dataIndex: 'notes',
 			key: 'notes',
 			width: 200,
-			render: (text) => <span>{text ? (text.length > 30 ? `${text.slice(0, 30)}...` : text) : ''}</span>,
+			render: (text) => <span dangerouslySetInnerHTML={{__html: text ? (text.length > 30 ? `${text.slice(0, 30)}...` : text) : ''}}/>,
 		},
 		{
 			title: 'Trạng thái xử lý',
@@ -300,15 +359,20 @@ const Contact = () => {
 			render: (_, record) => (
 				<Space size="middle">
 					{!record.author ? (
-						<Button
-							size="large"
-							type="primary"
-							onClick={() => {
-								// TODO: handle nhận xử lý ở đây
-							}}
+						<Popconfirm
+							title={`Bạn có chắc chắn muốn tiếp nhận xử lý Contact của khách hàng ${record.name}?`}
+							onConfirm={() => handleUpdateAuthor(record.id)}
+							okText={isLoadingUpdateAuthor ? 'Đang xử lý ...' : 'Có, Tiếp nhận'}
+							cancelText="Không"
+							placement="left"
 						>
-							Tiếp nhận
-						</Button>
+							<Button
+								size="large"
+								type="primary"
+							>
+								Tiếp nhận
+							</Button>
+						</Popconfirm>
 					) : (
 						(InfoUser?.user?.id === record.author?.id) ? (
 							<>
@@ -365,16 +429,19 @@ const Contact = () => {
 				centered
 				open={isInfoModalVisible}
 				onCancel={() => {
-					setIsInfoModalVisible(false)
-					setEditorState(EditorState.createEmpty())
+					setIsInfoModalVisible(false);
+					setCurrentRecord(null);
+					setEditorState(EditorState.createEmpty());
 					form.resetFields();
 				}}
 				width={1200}
 				footer={[
-					<Button size="large" key="cancel" onClick={() => {
+					<Button
+						size="large" key="cancel" onClick={() => {
 						setIsInfoModalVisible(false)
 						setEditorState(EditorState.createEmpty())
 						form.resetFields();
+						setCurrentRecord(null);
 					}}>
 						Đóng
 					</Button>,
@@ -382,10 +449,10 @@ const Contact = () => {
 						size="large"
 						key="submit"
 						type="primary"
-						loading={isLoadingUpdateContactStatus}
-						onClick={() => handleStatusChange(currentRecord?.id, currentRecord?.status_id)}
+						loading={isLoadingUpdateContact}
+						onClick={handleSubmit}
 					>
-						Cập nhật dữ liệu
+						{isLoadingUpdateContact ? 'Đang xử lý ...' : 'Cập nhật thông tin'}
 					</Button>,
 				]}
 			>
@@ -468,8 +535,9 @@ const Contact = () => {
 							size="large"
 							style={{width: "100%"}}
 							value={currentRecord?.status_id}
-							onChange={(value) => handleStatusChange(currentRecord?.id, value, true)}
-							loading={isLoadingUpdateContactStatus}
+							onChange={(value) => {
+								setCurrentRecord({...currentRecord, status_id: value});
+							}}
 						>
 							{statuses.map((status) => (
 								<Option key={status.id} value={status.id}>
@@ -494,6 +562,37 @@ const Contact = () => {
 						/>
 					</div>
 				</Space>
+				{(isLoadingUpdateContact) && (
+					<div
+						style={{
+							position: 'absolute',
+							zIndex: 10,
+							top: 0,
+							left: 0,
+							width: '100%',
+							height: '100%',
+							background: 'rgba(255,255,255,0.7)',
+							display: 'flex',
+							flexDirection: 'column',
+							alignItems: 'center',
+							justifyContent: 'center',
+							borderRadius: 8,
+						}}
+					>
+						<Spin size="large"/>
+						<span
+							style={{
+								fontSize: 16,
+								fontWeight: 500,
+								color: '#3024db',
+								marginTop: 12,
+								textAlign: 'center',
+							}}
+						>
+                    Đang xử lý, vui lòng đợi...
+                  </span>
+					</div>
+				)}
 			</Modal>
 			<div
 				className="p-4 shadow-lg"

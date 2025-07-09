@@ -5,6 +5,7 @@ import {Spin} from 'antd';
 
 const User = React.lazy(() => import('views/admin/user'));
 const Article = React.lazy(() => import('views/admin/article'));
+const Service = React.lazy(() => import('views/admin/service'));
 const Profile = React.lazy(() => import('views/admin/profile'));
 const Banner = React.lazy(() => import('views/admin/banner'));
 const SignIn = React.lazy(() => import('views/auth/SignIn'));
@@ -83,6 +84,21 @@ const routes = [
 			</Suspense>,
 		role: ['admin', 'editor'],
 	},
+	// {
+	// 	name: 'Service Data',
+	// 	layout: 'admin',
+	// 	path: 'service',
+	// 	icon: <MdNewspaper className="h-6 w-6"/>,
+	// 	component:
+	// 		<Suspense fallback={
+	// 			<div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '70vh'}}>
+	// 				<Spin size="large"/>
+	// 			</div>
+	// 		}>
+	// 			<Service/>
+	// 		</Suspense>,
+	// 	role: ['admin'],
+	// },
 	{
 		name: 'Profile',
 		layout: 'admin',
@@ -102,7 +118,7 @@ const routes = [
 		path: 'sign-in',
 		icon: <MdSensorOccupied className="h-6 w-6"/>,
 		component: (
-			<Suspense fallback={<div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '70vh'}}>
+			<Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
 				<Spin size="large"/>
 			</div>}>
 				<SignIn/>

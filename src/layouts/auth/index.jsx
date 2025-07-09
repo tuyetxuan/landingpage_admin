@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import routes from 'routes.js';
 
 export default function Auth() {
@@ -22,10 +22,6 @@ export default function Auth() {
             <div className="mx-auto flex  min-h-[100vh] w-full max-w-[1383px] flex-col  justify-start md:max-w-[100%]">
               <Routes>
                 {getRoutes(routes)}
-                <Route
-                  path="/"
-                  element={<Navigate to="/auth/sign-in" replace />}
-                />
               </Routes>
             </div>
           </div>

@@ -36,6 +36,26 @@ export const contact = createApi({
 			},
 			providesTags: ["Contact"],
 		}),
+		updateContactAuthor: builder.mutation({
+			queryFn: async (credentials) => {
+				const result = await contactApi.updateContactAuthor(credentials);
+				if (result.success) {
+					return {data: result.data?.metadata || []};
+				}
+				return {error: {message: result.message, status: result.status}};
+			},
+			providesTags: ["Contact"],
+		}),
+		updateStatus: builder.mutation({
+			queryFn: async (credentials) => {
+				const result = await contactApi.updateStatus(credentials);
+				if (result.success) {
+					return {data: result.data?.metadata || []};
+				}
+				return {error: {message: result.message, status: result.status}};
+			},
+			providesTags: ["Contact"],
+		}),
 		deleteContact: builder.mutation({
 			queryFn: async (id) => {
 				const result = await contactApi.deleteContact(id);
@@ -54,4 +74,6 @@ export const {
 	useGetContactQuery,
 	useUpdateContactMutation,
 	useDeleteContactMutation,
+	useUpdateContactAuthorMutation,
+	useUpdateStatusMutation,
 } = contact;

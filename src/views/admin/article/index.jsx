@@ -478,14 +478,29 @@ const Article = () => {
                   label="Category"
                   initialValue={currentRecord ? currentRecord.category_id : undefined}
                   rules={[{ required: true, message: 'Please select a Category!' }]}
+                  style={{ marginBottom: 0 }}
                 >
-                  <Select size="large" placeholder="Select a category">
-                    {categoryArticles.map((category) => (
-                      <Option key={category.id} value={category.id}>
-                        {category.name}
-                      </Option>
-                    ))}
-                  </Select>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Select size="large" placeholder="Select a category" style={{ flex: 1 }}>
+                      {categoryArticles.map((category) => (
+                        <Option key={category.id} value={category.id}>
+                          {category.name}
+                        </Option>
+                      ))}
+                    </Select>
+                    <Button
+                      size="large"
+                      style={{ marginLeft: 8 }}
+                      type="dashed"
+                      icon={<PlusOutlined />}
+                      onClick={() => {
+                        // TODO: Implement quick add category logic here
+                        message.info('Quick add category clicked!');
+                      }}
+                    >
+                      <span style={{ fontSize: 16 }}>Quick Add</span>
+                    </Button>
+                  </div>
                 </Form.Item>
               </Col>
             </Row>
