@@ -122,7 +122,7 @@ const SignIn = () => {
 								name="email"
 								label="Email"
 								className="mb-8"
-								initialValue={'vuonggiapshu.pct@gmail.com'}
+								initialValue={'test@gmail.com'}
 								rules={[
 									{required: true, message: 'Vui lòng nhập email!'},
 									{type: 'email', message: 'Email không đúng định dạng!'},
@@ -138,7 +138,7 @@ const SignIn = () => {
 								name="password"
 								label="Password"
 								style={{marginBottom: 50}}
-								initialValue={'123456Password@123456'}
+								initialValue={'Password'}
 								rules={[
 									{required: true, message: 'Vui lòng nhập mật khẩu!'},
 									{min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!'},
